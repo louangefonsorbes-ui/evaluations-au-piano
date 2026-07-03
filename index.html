@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Évaluation Piano</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Évaluation Piano</h1>
+
+    <!-- Connexion -->
+    <div id="login">
+
+        <p>Veuillez entrer votre identifiant :</p>
+
+        <input
+            type="text"
+            id="identifiant"
+            placeholder="">
+
+        <br><br>
+
+        <button onclick="connexion()">
+            Consulter mon évaluation
+        </button>
+
+    </div>
+
+    <!-- Résultat -->
+    <div id="espaceEleve" style="display:none;">
+
+        <h2 id="nom"></h2>
+
+        <p>
+            <strong>Évaluation disponible</strong><br>
+            Séance du 27 juin 2026
+        </p>
+
+        <div style="border:1px solid #000000; border-radius:4px; padding:10px; text-align:center; margin:10px auto;width:fit-content;">
+            <h3 style="margin:0;color:#000000;">Résultat général :</h3>
+            <h2 id="note" style="text-align:center;margin:5px 0;font-size:28px;"></h2>
+        </div>
+
+        <div id="contenu"></div>
+
+        <button onclick="deconnexion()" style="background-color:#d32f2f;">
+            Déconnexion
+        </button>
+
+    </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
