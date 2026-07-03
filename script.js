@@ -61,19 +61,20 @@ else{return"#388e3c";}
 
 }
 
-function connexion(){
-
-let id=document.getElementById("identifiant").value.toUpperCase();
+function chargerEleve(id){
 
 database.ref('eleves/' + id).once('value')
   .then(snapshot => {
     let e = snapshot.val();
-    
+
     if(!e){
+      localStorage.removeItem("identifiant");
       alert("Identifiant inconnu");
       return;
     }
-    
+
+    localStorage.setItem("identifiant", id);
+
     document.getElementById("loginScreen").style.display="none";
 
     document.getElementById("appShell").style.display="flex";
@@ -125,7 +126,17 @@ database.ref('eleves/' + id).once('value')
 
 }
 
+function connexion(){
+
+let id=document.getElementById("identifiant").value.toUpperCase();
+
+chargerEleve(id);
+
+}
+
 function deconnexion(){
+
+localStorage.removeItem("identifiant");
 
 document.getElementById("appShell").style.display="none";
 
@@ -140,6 +151,14 @@ document.querySelector('.nav-btn[data-tab="piano"]').classList.add("active");
 document.querySelectorAll(".tab-content").forEach(c=>c.style.display="none");
 
 document.getElementById("tab-piano").style.display="block";
+
+}
+
+let sessionSauvegardee=localStorage.getItem("identifiant");
+
+if(sessionSauvegardee){
+
+chargerEleve(sessionSauvegardee);
 
 }
 

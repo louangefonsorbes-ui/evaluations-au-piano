@@ -1,4 +1,3 @@
-// Configuration Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyA3XB1v3Rkm52dLnT_UFSee_gKEYhc9ZdU",
   authDomain: "evaluation-piano.firebaseapp.com",
@@ -9,6 +8,5 @@ const firebaseConfig = {
   appId: "1:680817556214:web:d99d54fbd241313cbfcad7"
 };
 
-// Initialiser Firebase
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
