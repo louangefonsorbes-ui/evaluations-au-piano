@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Évaluation Piano</title>
+    <title>Les Adorateurs de Fonsorbes</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div class="container">
+<!-- Écran de connexion -->
+<div class="login-screen" id="loginScreen">
 
-    <h1>Évaluation Piano</h1>
+    <div class="login-card">
 
-    <!-- Connexion -->
-    <div id="login">
+        <h1>Les Adorateurs de Fonsorbes</h1>
 
         <p>Veuillez entrer votre identifiant :</p>
 
@@ -26,31 +26,87 @@
         <br><br>
 
         <button onclick="connexion()">
-            Consulter mon évaluation
+            Se connecter
         </button>
 
     </div>
 
-    <!-- Résultat -->
-    <div id="espaceEleve" style="display:none;">
+</div>
 
-        <h2 id="nom"></h2>
+<!-- Application (visible après connexion) -->
+<div class="app" id="appShell" style="display:none;">
 
-        <p>
-            <strong>Évaluation disponible</strong><br>
-            Séance du 27 juin 2026
-        </p>
+    <!-- Sidebar -->
+    <nav class="sidebar">
 
-        <div style="border:1px solid #000000; border-radius:4px; padding:10px; text-align:center; margin:10px auto;width:fit-content;">
-            <h3 style="margin:0;color:#000000;">Résultat général :</h3>
-            <h2 id="note" style="text-align:center;margin:5px 0;font-size:28px;"></h2>
+        <div class="sidebar-title">Les Adorateurs de Fonsorbes</div>
+
+        <button class="nav-btn" data-tab="cours">Cours</button>
+        <button class="nav-btn" data-tab="repertoire">Répertoire</button>
+        <button class="nav-btn" data-tab="membres">Membres</button>
+        <button class="nav-btn" data-tab="programmes">Programmes</button>
+        <button class="nav-btn" data-tab="lead">Lead</button>
+        <button class="nav-btn active" data-tab="piano">Évaluation Piano</button>
+
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="main">
+
+        <header class="topbar">
+            <div class="session-info">
+                <span id="sessionNom"></span>
+                <button class="btn-deconnexion" onclick="deconnexion()">Déconnexion</button>
+            </div>
+        </header>
+
+        <div class="main-content">
+
+            <!-- Onglet Cours -->
+            <div class="tab-content" id="tab-cours" style="display:none;">
+                <p class="bientot-disponible">Bientôt disponible.</p>
+            </div>
+
+            <!-- Onglet Répertoire -->
+            <div class="tab-content" id="tab-repertoire" style="display:none;">
+                <p class="bientot-disponible">Bientôt disponible.</p>
+            </div>
+
+            <!-- Onglet Membres -->
+            <div class="tab-content" id="tab-membres" style="display:none;">
+                <p class="bientot-disponible">Bientôt disponible.</p>
+            </div>
+
+            <!-- Onglet Programmes -->
+            <div class="tab-content" id="tab-programmes" style="display:none;">
+                <p class="bientot-disponible">Bientôt disponible.</p>
+            </div>
+
+            <!-- Onglet Lead -->
+            <div class="tab-content" id="tab-lead" style="display:none;">
+                <p class="bientot-disponible">Bientôt disponible.</p>
+            </div>
+
+            <!-- Onglet Évaluation Piano -->
+            <div class="tab-content" id="tab-piano">
+
+                <h2 id="nom"></h2>
+
+                <p>
+                    <strong>Évaluation disponible</strong><br>
+                    Séance du 27 juin 2026
+                </p>
+
+                <div style="border:1px solid #000000; border-radius:4px; padding:10px; text-align:center; margin:10px auto;width:fit-content;">
+                    <h3 style="margin:0;color:#000000;">Résultat général :</h3>
+                    <h2 id="note" style="text-align:center;margin:5px 0;font-size:28px;"></h2>
+                </div>
+
+                <div id="contenu"></div>
+
+            </div>
+
         </div>
-
-        <div id="contenu"></div>
-
-        <button onclick="deconnexion()" style="background-color:#d32f2f;">
-            Déconnexion
-        </button>
 
     </div>
 
