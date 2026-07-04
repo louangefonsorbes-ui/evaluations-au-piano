@@ -15,7 +15,9 @@ document.getElementById("tab-"+btn.dataset.tab).style.display="block";
 
 });
 
-function tableau(data,total){
+function tableau(data){
+
+let total=data.reduce((somme,l)=>somme+l[1],0);
 
 let html="";
 
@@ -107,11 +109,11 @@ database.ref('eleves/' + id).once('value')
 
     html+="<h3>Exercice 1 - Main gauche</h3>";
 
-    html+=tableau(e.mainGauche,10);
+    html+=tableau(e.mainGauche);
 
     html+="<h3>Exercice 2 - Main droite</h3>";
 
-    html+=tableau(e.mainDroite,9);
+    html+=tableau(e.mainDroite);
 
     html+="<hr style='margin:5px auto; border:none; border-top:1px solid #ccc; width:80%;'>";
 
