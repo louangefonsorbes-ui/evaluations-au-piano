@@ -15,9 +15,15 @@ document.getElementById("tab-"+btn.dataset.tab).style.display="block";
 
 });
 
+function totalNote(data){
+
+return data.reduce((somme,l)=>somme+l[1],0);
+
+}
+
 function tableau(data){
 
-let total=data.reduce((somme,l)=>somme+l[1],0);
+let total=totalNote(data);
 
 let html="";
 
@@ -87,7 +93,7 @@ database.ref('eleves/' + id).once('value')
 
     let noteElement=document.getElementById("note");
 
-    if(!e.note){
+    if(!e.mainGauche || !e.mainDroite){
 
       noteElement.innerHTML="—";
 
@@ -99,9 +105,13 @@ database.ref('eleves/' + id).once('value')
 
     }
 
-    noteElement.innerHTML=e.note;
+    let noteGlobale=(totalNote(e.mainGauche)+totalNote(e.mainDroite))/2;
 
-    let couleur=obtenirCouleurNote(e.note);
+    let noteTexte=Number.isInteger(noteGlobale) ? noteGlobale+" /20" : noteGlobale.toFixed(1).replace(".",",")+" /20";
+
+    noteElement.innerHTML=noteTexte;
+
+    let couleur=obtenirCouleurNote(noteTexte);
 
     noteElement.style.color=couleur;
 
