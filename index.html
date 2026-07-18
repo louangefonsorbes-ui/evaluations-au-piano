@@ -28,6 +28,32 @@
             Se connecter
         </button>
 
+        <p style="margin-top:20px;">
+            <a href="#" onclick="afficherLoginAdmin(); return false;" style="font-size:12px;color:#888;">Administration</a>
+        </p>
+
+        <div id="loginAdmin" style="display:none;margin-top:10px;">
+
+            <input
+                type="email"
+                id="adminEmail"
+                placeholder="Email admin">
+
+            <br><br>
+
+            <input
+                type="password"
+                id="adminMotDePasse"
+                placeholder="Mot de passe">
+
+            <br><br>
+
+            <button onclick="connexionAdmin()">
+                Se connecter (admin)
+            </button>
+
+        </div>
+
     </div>
 
 </div>
@@ -44,6 +70,7 @@
         <button class="nav-btn" data-tab="programmes">Programmes</button>
         <button class="nav-btn" data-tab="lead">Lead</button>
         <button class="nav-btn active" data-tab="piano">Évaluation Piano</button>
+        <button class="nav-btn" data-tab="admin" id="navAdmin" style="display:none;">Administration</button>
 
     </nav>
 
@@ -96,6 +123,44 @@
 
             </div>
 
+            <div class="tab-content" id="tab-admin" style="display:none;">
+
+                <h2>Administration</h2>
+
+                <label for="adminSelectEleve">Élève</label><br>
+                <select id="adminSelectEleve"></select>
+
+                <br><br>
+
+                <label for="adminIdentifiant">Identifiant</label><br>
+                <input type="text" id="adminIdentifiant">
+
+                <br><br>
+
+                <label for="adminNom">Nom</label><br>
+                <input type="text" id="adminNom">
+
+                <br><br>
+
+                <h3>Exercice 1 - Main gauche</h3>
+                <div id="adminCriteresGauche"></div>
+
+                <h3>Exercice 2 - Main droite</h3>
+                <div id="adminCriteresDroite"></div>
+
+                <br>
+
+                <label for="adminRapport">Rapport (HTML)</label><br>
+                <textarea id="adminRapport" rows="10" style="width:100%;"></textarea>
+
+                <p id="adminDerniereModif" style="color:#888;font-size:12px;"></p>
+
+                <button id="adminEnregistrerBtn" onclick="enregistrerEleve()">Enregistrer</button>
+
+                <button onclick="deconnexionAdmin()" style="margin-left:10px;">Déconnexion admin</button>
+
+            </div>
+
         </div>
 
     </div>
@@ -104,6 +169,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="script.js"></script>
 
