@@ -20,39 +20,20 @@
         <input
             type="text"
             id="identifiant"
-            placeholder="">
+            placeholder="Identifiant">
+
+        <br><br>
+
+        <input
+            type="password"
+            id="motDePasse"
+            placeholder="Mot de passe">
 
         <br><br>
 
         <button onclick="connexion()">
             Se connecter
         </button>
-
-        <p style="margin-top:20px;">
-            <a href="#" onclick="afficherLoginAdmin(); return false;" style="font-size:12px;color:#888;">Administration</a>
-        </p>
-
-        <div id="loginAdmin" style="display:none;margin-top:10px;">
-
-            <input
-                type="email"
-                id="adminEmail"
-                placeholder="Email admin">
-
-            <br><br>
-
-            <input
-                type="password"
-                id="adminMotDePasse"
-                placeholder="Mot de passe">
-
-            <br><br>
-
-            <button onclick="connexionAdmin()">
-                Se connecter (admin)
-            </button>
-
-        </div>
 
     </div>
 
@@ -127,7 +108,7 @@
 
                 <h2>Administration</h2>
 
-                <label for="adminSelectEleve">Élève</label><br>
+                <label for="adminSelectEleve">Membre</label><br>
                 <select id="adminSelectEleve"></select>
 
                 <br><br>
@@ -141,6 +122,28 @@
                 <input type="text" id="adminNom">
 
                 <br><br>
+
+                <label for="adminPrenom">Prénom</label><br>
+                <input type="text" id="adminPrenom">
+
+                <br><br>
+
+                <label for="adminRole">Rôle</label><br>
+                <select id="adminRole">
+                    <option value="membre">Membre</option>
+                    <option value="admin">Admin</option>
+                </select>
+
+                <br><br>
+
+                <div id="adminMotDePasseInitialWrapper" style="display:none;">
+
+                    <label for="adminMotDePasseInitial">Mot de passe initial</label><br>
+                    <input type="password" id="adminMotDePasseInitial">
+
+                    <br><br>
+
+                </div>
 
                 <h3>Exercice 1 - Main gauche</h3>
                 <div id="adminCriteresGauche"></div>
@@ -157,7 +160,9 @@
 
                 <button id="adminEnregistrerBtn" onclick="enregistrerEleve()">Enregistrer</button>
 
-                <button onclick="deconnexionAdmin()" style="margin-left:10px;">Déconnexion admin</button>
+                <button id="adminCreerBtn" onclick="creerMembre()" style="display:none;">Créer le compte</button>
+
+                <button onclick="deconnexion()" style="margin-left:10px;">Déconnexion</button>
 
             </div>
 
