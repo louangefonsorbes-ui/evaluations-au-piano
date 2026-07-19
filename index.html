@@ -90,16 +90,6 @@
 
                 <h2 id="nom"></h2>
 
-                <p>
-                    <strong>Évaluation disponible</strong><br>
-                    Séance du 27 juin 2026
-                </p>
-
-                <div style="border:1px solid #000000; border-radius:4px; padding:10px; text-align:center; margin:10px auto;width:fit-content;">
-                    <h3 style="margin:0;color:#000000;">Résultat général :</h3>
-                    <h2 id="note" style="text-align:center;margin:5px 0;font-size:28px;"></h2>
-                </div>
-
                 <div id="contenu"></div>
 
             </div>
@@ -107,63 +97,128 @@
             <div class="tab-content" id="tab-admin" style="display:none;">
 
                 <h2>Administration</h2>
+                <p class="admin-subtitle">Gérez les membres, les évaluations et les contenus de l'application.</p>
 
-                <label for="adminSelectEleve">Membre</label><br>
-                <select id="adminSelectEleve"></select>
+                <div class="admin-cards-row">
 
-                <br><br>
+                    <section class="admin-card" id="gestion-membres">
 
-                <label for="adminIdentifiant">Identifiant</label><br>
-                <input type="text" id="adminIdentifiant">
+                        <div class="admin-card-header">
+                            <h3>Gestion des membres</h3>
+                            <button type="button" class="btn-ajout" title="Ajout" onclick="nouveauMembreForm()">+</button>
+                        </div>
 
-                <br><br>
+                        <input type="text" id="adminRechercheMembre" placeholder="Rechercher un membre...">
 
-                <label for="adminNom">Nom</label><br>
-                <input type="text" id="adminNom">
+                        <div class="admin-table-scroll">
+                            <div id="adminMembresTableBody" class="membres-liste"></div>
+                        </div>
 
-                <br><br>
+                        <p id="adminTotalMembres" class="admin-table-footer"></p>
 
-                <label for="adminPrenom">Prénom</label><br>
-                <input type="text" id="adminPrenom">
+                    </section>
 
-                <br><br>
+                    <section class="admin-card" id="gestion-piano">
 
-                <label for="adminRole">Rôle</label><br>
-                <select id="adminRole">
-                    <option value="membre">Membre</option>
-                    <option value="admin">Admin</option>
-                </select>
+                        <div class="admin-card-header">
+                            <h3>Évaluation Piano</h3>
+                            <select id="adminSelectEleve"></select>
+                            <button type="button" class="btn-ajout" title="Ajout" onclick="nouvelleEvaluationAdmin(document.getElementById('adminSelectEleve').value)">+</button>
+                        </div>
 
-                <br><br>
+                        <div id="adminHistoriqueEvaluations" class="historique-evaluations">
+                            <p class="bientot-disponible">Sélectionnez un membre pour voir son historique.</p>
+                        </div>
 
-                <div id="adminMotDePasseInitialWrapper" style="display:none;">
-
-                    <label for="adminMotDePasseInitial">Mot de passe initial</label><br>
-                    <input type="password" id="adminMotDePasseInitial">
-
-                    <br><br>
+                    </section>
 
                 </div>
 
-                <h3>Exercice 1 - Main gauche</h3>
-                <div id="adminCriteresGauche"></div>
+                <div class="admin-cards-row admin-cards-row-compact">
 
-                <h3>Exercice 2 - Main droite</h3>
-                <div id="adminCriteresDroite"></div>
+                    <section class="admin-card admin-card-placeholder">
+                        <h3>Gestion des cours</h3>
+                    </section>
 
-                <br>
+                    <section class="admin-card admin-card-placeholder">
+                        <h3>Gestion du répertoire</h3>
+                    </section>
 
-                <label for="adminRapport">Rapport (HTML)</label><br>
-                <textarea id="adminRapport" rows="10" style="width:100%;"></textarea>
+                    <section class="admin-card admin-card-placeholder">
+                        <h3>Gestion des programmes</h3>
+                    </section>
 
-                <p id="adminDerniereModif" style="color:#888;font-size:12px;"></p>
+                    <section class="admin-card admin-card-placeholder">
+                        <h3>Gestion des leads</h3>
+                    </section>
 
-                <button id="adminEnregistrerBtn" onclick="enregistrerEleve()">Enregistrer</button>
+                </div>
 
-                <button id="adminCreerBtn" onclick="creerMembre()" style="display:none;">Créer le compte</button>
+                <section class="admin-card admin-card-placeholder">
+                    <h3>Activité récente</h3>
+                </section>
 
-                <button onclick="deconnexion()" style="margin-left:10px;">Déconnexion</button>
+            </div>
 
+            <div class="modal-overlay" id="modalMembre" style="display:none;">
+                <div class="modal-box">
+
+                    <button type="button" class="modal-close" onclick="fermerModal('modalMembre')">×</button>
+
+                    <h3 id="modalMembreTitre">Membre</h3>
+
+                    <label for="adminIdentifiant">Identifiant</label><br>
+                    <input type="text" id="adminIdentifiant">
+
+                    <br><br>
+
+                    <label for="adminNom">Nom</label><br>
+                    <input type="text" id="adminNom">
+
+                    <br><br>
+
+                    <label for="adminPrenom">Prénom</label><br>
+                    <input type="text" id="adminPrenom">
+
+                    <br><br>
+
+                    <label for="adminRole">Rôle</label><br>
+                    <select id="adminRole">
+                        <option value="membre">Membre</option>
+                        <option value="admin">Admin</option>
+                    </select>
+
+                    <br><br>
+
+                    <div id="adminMotDePasseInitialWrapper" style="display:none;">
+
+                        <label for="adminMotDePasseInitial">Mot de passe initial</label><br>
+                        <input type="password" id="adminMotDePasseInitial">
+
+                        <br><br>
+
+                    </div>
+
+                    <button id="adminCreerBtn" onclick="creerMembre()" style="display:none;">Créer le compte</button>
+
+                    <button id="adminEnregistrerBtn" onclick="enregistrerProfil()">Enregistrer</button>
+
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="modalVoirMembre" style="display:none;">
+                <div class="modal-box">
+
+                    <button type="button" class="modal-close" onclick="fermerModal('modalVoirMembre')">×</button>
+
+                    <h3>Fiche membre</h3>
+
+                    <p><strong>Identifiant :</strong> <span id="voirIdentifiant"></span></p>
+                    <p><strong>Nom :</strong> <span id="voirNom"></span></p>
+                    <p><strong>Prénom :</strong> <span id="voirPrenom"></span></p>
+                    <p><strong>Rôle :</strong> <span id="voirRole"></span></p>
+
+                </div>
             </div>
 
         </div>

@@ -25,10 +25,11 @@ Création de compte membre : via le panneau Administration, en utilisant une sec
 ## Modèle de données (Realtime Database)
 
 - `membres/{uid}` — profil : `identifiant`, `nom`, `prenom`, `role`.
-- `evaluationsPiano/{uid}` — évaluation piano : `mainGauche`, `mainDroite` (tableaux `[critère, note/5]`), `rapport` (HTML), `updatedAt`.
-- `eleves/{identifiant}` — ancien modèle (pré-authentification), conservé en lecture seule pendant la migration progressive vers `evaluationsPiano`.
+- `evaluationsPiano/{uid}/{evalId}` — une séance d'évaluation piano. `evalId` est une clé `push()`, un simple identifiant technique (le tri se fait sur le champ `date`, jamais sur la clé). Champs : `titre` (texte libre), `date` (saisie par l'admin, pas la date de sauvegarde), `mainGauche`, `mainDroite` (tableaux `[critère, note/5]`), `rapport` (HTML), `createdBy`/`updatedBy` (uid de l'admin), `updatedAt`.
 
-Le total par exercice et la note globale sont calculés côté client (`script.js`), jamais stockés.
+Un membre a donc un historique de séances, pas une évaluation unique. Le total par exercice et la note globale de chaque séance sont calculés côté client (`script.js`), jamais stockés.
+
+**Ancien format (avant migration)** : certains comptes migrés depuis l'ancien système avaient `evaluationsPiano/{uid}` à plat (une seule séance, sans `evalId`). `chargerHistoriqueAdmin()` détecte ce cas et migre automatiquement vers le nouveau format dès que l'admin ouvre la fiche du membre concerné — aucune action manuelle requise.
 
 ## Règles de sécurité (Realtime Database)
 
@@ -50,13 +51,19 @@ Rôle vérifié via une lecture de `membres/{auth.uid}/role` depuis les règles 
         ".read": "auth != null && (auth.uid === $uid || root.child('membres').child(auth.uid).child('role').val() === 'admin')",
         ".write": "auth != null && root.child('membres').child(auth.uid).child('role').val() === 'admin'"
       }
-    },
-    "eleves": {
-      "$id": { ".read": true, ".write": false }
     }
   }
 }
 ```
+
+## Panneau d'administration
+
+Onglet caché (`#tab-admin`), affiché uniquement si `membres/{uid}/role === "admin"`.
+
+- **Gestion des membres** : liste en cartes (nom, badge de rôle, liens Voir/Modifier), recherche client-side, hauteur fixe avec défilement interne. « Voir » ouvre une fiche en lecture seule (popup), « Modifier » ouvre le formulaire d'édition (même popup que la création).
+- **Évaluation Piano** : historique des séances en accordéon (`<details>`/`<summary>`, natif, sans JS pour l'ouverture/fermeture). La plus récente séance est dépliée par défaut, les autres repliées ; défilement interne au-delà de quelques séances. Chaque séance dépliée est modifiable indépendamment (son propre bouton Enregistrer/Annuler), sans toucher aux autres séances ni au profil du membre.
+- Création de membre et création de séance sont volontairement séparées de leur sauvegarde de profil (`enregistrerProfil()` vs `enregistrerEvaluationEntree()`) : éditer le nom d'un membre n'écrit jamais dans ses évaluations, et inversement.
+- Les autres blocs (Cours, Répertoire, Programmes, Leads, Activité récente) sont des cartes vides, prévues pour les prochaines phases de la feuille de route — aucune donnée factice, aucune logique.
 
 ## Onglets
 
