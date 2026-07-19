@@ -1,4 +1,17 @@
 
+function echapperHTML(str) {
+  if (!str) return "";
+  return str.replace(/[&<>'"]/g, 
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
+
 document.querySelectorAll(".nav-btn").forEach(btn=>{
 
 btn.addEventListener("click",()=>{
@@ -35,7 +48,7 @@ data.forEach(l=>{
 
 html+="<tr>";
 
-html+="<td>"+l[0]+"</td>";
+html+="<td>"+echapperHTML(l[0])+"</td>";
 
 html+="<td>"+l[1]+"/5</td>";
 
@@ -83,9 +96,9 @@ return Object.keys(evaluations||{})
 
 function afficherEvaluation(nom,evaluations){
 
-document.getElementById("sessionNom").innerHTML=nom;
+document.getElementById("sessionNom").textContent=nom;
 
-document.getElementById("nom").innerHTML=nom;
+document.getElementById("nom").textContent=nom;
 
 let entrees=trierEvaluationsParDate(evaluations);
 
@@ -107,11 +120,11 @@ html+="<summary></summary>";
 
 html+="<div class='evaluation-entree' data-resume-id='"+e.id+"'>";
 
-html+="<div style='border:1px solid #000000; border-radius:4px; padding:10px; text-align:center; margin:10px auto;width:fit-content;'>";
+html+="<div class='note-container-box'>";
 
-html+="<h3 style='margin:0;color:#000000;'>Résultat général :</h3>";
+html+="<h3>Résultat général</h3>";
 
-html+="<h2 data-note-id='"+e.id+"' style='text-align:center;margin:5px 0;font-size:28px;'></h2>";
+html+="<h2 data-note-id='"+e.id+"'></h2>";
 
 html+="</div>";
 
@@ -641,29 +654,32 @@ let identifiants=Object.keys(membres);
 
 identifiants.forEach(uid=>{
 
-let m=membres[uid];
+    let m=membres[uid];
 
-let option=document.createElement("option");
+    let option=document.createElement("option");
 
-option.value=uid;
+    option.value=uid;
 
-option.textContent=m.nom+" ("+m.identifiant+")";
+    option.textContent=(m.nom || "")+" ("+(m.identifiant || "")+")";
 
-select.appendChild(option);
+    select.appendChild(option);
 
-let carte=document.createElement("div");
+    let carte=document.createElement("div");
 
-carte.className="membre-carte";
+    carte.className="membre-carte";
 
-carte.dataset.identifiant=m.identifiant || "";
+    carte.dataset.identifiant=m.identifiant || "";
 
-let role=m.role==="admin" ? "Admin" : "Membre";
+    let role=m.role==="admin" ? "Admin" : "Membre";
 
-let badgeClasse=m.role==="admin" ? "badge-admin" : "badge-membre";
+    let badgeClasse=m.role==="admin" ? "badge-admin" : "badge-membre";
 
-carte.innerHTML="<div class='membre-nom'>"+m.nom+" "+(m.prenom || "")+"</div><div class='membre-actions'><span class='badge "+badgeClasse+"'>"+role+"</span><a href='#' onclick=\"voirMembreAdmin('"+uid+"');return false;\">Voir</a> / <a href='#' onclick=\"selectionnerMembreAdmin('"+uid+"');return false;\">Modifier</a></div>";
+    let nomEchappe = echapperHTML(m.nom || "");
+    let prenomEchappe = echapperHTML(m.prenom || "");
 
-corpsTableau.appendChild(carte);
+    carte.innerHTML="<div class='membre-nom'>"+nomEchappe+" "+prenomEchappe+"</div><div class='membre-actions'><span class='badge "+badgeClasse+"'>"+role+"</span><a href='#' onclick=\"voirMembreAdmin('"+uid+"');return false;\">Voir</a> / <a href='#' onclick=\"selectionnerMembreAdmin('"+uid+"');return false;\">Modifier</a></div>";
+
+    corpsTableau.appendChild(carte);
 
 });
 
