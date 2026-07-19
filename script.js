@@ -473,22 +473,8 @@ secondaryAuth.createUserWithEmailAndPassword(email,motDePasse)
       });
     }).then(()=>uid);
   })
-  .then(uid=>{
-    return database.ref('eleves/' + identifiant.toUpperCase()).once('value').then(snapshot=>{
-      let ancienneEvaluation=snapshot.val();
-      if(!ancienneEvaluation || !ancienneEvaluation.mainGauche || !ancienneEvaluation.mainDroite){
-        return false;
-      }
-      return database.ref('evaluationsPiano/' + uid).update({
-        mainGauche: ancienneEvaluation.mainGauche,
-        mainDroite: ancienneEvaluation.mainDroite,
-        rapport: ancienneEvaluation.rapport,
-        updatedAt: firebase.database.ServerValue.TIMESTAMP
-      }).then(()=>true);
-    });
-  })
-  .then(evaluationMigree=>{
-    alert(evaluationMigree ? "Compte créé, évaluation existante migrée automatiquement depuis eleves/"+identifiant.toUpperCase() : "Compte créé (aucune évaluation existante trouvée pour cet identifiant dans eleves)");
+  .then(()=>{
+    alert("Compte créé");
     viderFormulaireAdmin();
     chargerListeAdmin();
   })
