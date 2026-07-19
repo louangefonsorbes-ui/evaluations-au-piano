@@ -493,7 +493,7 @@ secondaryAuth.createUserWithEmailAndPassword(email,motDePasse)
     chargerListeAdmin();
   })
   .catch(error=>{
-    alert("Erreur lors de la création du compte");
+    alert("Erreur lors de la création du compte : "+error.code+" - "+error.message);
     console.error(error);
   })
   .finally(()=>{
