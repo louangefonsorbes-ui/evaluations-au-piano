@@ -171,102 +171,103 @@ noteElement.style.color=obtenirCouleurNote(noteTexte);
 }
 
 function chargerProfil(){
+  let uid = auth.currentUser.uid;
 
-let uid=auth.currentUser.uid;
+  database.ref('membres/' + uid).once('value')
+    .then(snapshot => {
+      let m = snapshot.val();
+      if(!m){
+        alert("Compte non configuré, contactez l'administrateur");
+        auth.signOut();
+        return;
+      }
 
-database.ref('membres/' + uid).once('value')
-  .then(snapshot=>{
-    let m=snapshot.val();
+      // Masquage écran de connexion & affichage App Shell
+      const loginScreen = document.getElementById("loginScreen");
+      if (loginScreen) loginScreen.style.display = "none";
+      const appShell = document.getElementById("appShell");
+      if (appShell) appShell.style.display = "flex";
 
-    if(!m){
-      alert("Compte non configuré, contactez l'administrateur");
-      auth.signOut();
-      return;
-    }
+      // Session info
+      const sessionNomEl = document.getElementById("sessionNom");
+      if (sessionNomEl) {
+        sessionNomEl.textContent = (m.prenom || "") + " " + (m.nom || "");
+      }
 
-    document.getElementById("loginScreen").style.display="none";
+      // Admin button visibility
+      const navAdminEl = document.getElementById("navAdmin");
+      if (navAdminEl) {
+        navAdminEl.style.display = m.role === "admin" ? "" : "none";
+      }
 
-    document.getElementById("appShell").style.display="flex";
+      // Load piano evaluation data
+      database.ref('evaluationsPiano/' + uid).once('value')
+        .then(s => afficherEvaluation(m.nom, s.val()))
+        .catch(error => {
+          alert("Erreur de chargement de l'évaluation");
+          console.error(error);
+        });
 
-    document.getElementById("navAdmin").style.display = m.role==="admin" ? "" : "none";
-
-    database.ref('evaluationsPiano/' + uid).once('value')
-      .then(s=>afficherEvaluation(m.nom,s.val()))
-      .catch(error=>{
-        alert("Erreur de chargement de l'évaluation");
-        console.error(error);
-      });
-
-    if(m.role==="admin"){
-      chargerListeAdmin();
-    }
-  })
-  .catch(error=>{
-    alert("Erreur de connexion à la base de données");
-    console.error(error);
-  });
-
+      // Load admin list if admin
+      if (m.role === "admin") {
+        chargerListeAdmin();
+      }
+    })
+    .catch(error => {
+      alert("Erreur de connexion à la base de données");
+      console.error(error);
+    });
 }
 
 function connexion(){
+  let identifiant = document.getElementById("identifiant").value.trim();
+  let motDePasse = document.getElementById("motDePasse").value;
 
-let identifiant=document.getElementById("identifiant").value.trim();
+  if(!identifiant || !motDePasse){
+    alert("Identifiant et mot de passe sont obligatoires");
+    return;
+  }
 
-let motDePasse=document.getElementById("motDePasse").value;
-
-if(!identifiant || !motDePasse){
-
-alert("Identifiant et mot de passe sont obligatoires");
-
-return;
-
-}
-
-let email=identifiant.toLowerCase()+"@adorateurs.local";
-
-auth.signInWithEmailAndPassword(email,motDePasse)
-  .catch(error=>{
-    alert("Identifiant ou mot de passe incorrect");
-    console.error(error);
-  });
-
+  let email = identifiant.toLowerCase() + "@adorateurs.local";
+  auth.signInWithEmailAndPassword(email, motDePasse)
+    .catch(error => {
+      alert("Identifiant ou mot de passe incorrect");
+      console.error(error);
+    });
 }
 
 function deconnexion(){
-
-auth.signOut();
-
+  auth.signOut();
 }
 
-auth.onAuthStateChanged(user=>{
+auth.onAuthStateChanged(user => {
+  if(user){
+    chargerProfil();
+  } else {
+    const appShell = document.getElementById("appShell");
+    if (appShell) appShell.style.display = "none";
+    const loginScreen = document.getElementById("loginScreen");
+    if (loginScreen) loginScreen.style.display = "flex";
+    
+    const idEl = document.getElementById("identifiant");
+    if (idEl) idEl.value = "";
+    const pwEl = document.getElementById("motDePasse");
+    if (pwEl) pwEl.value = "";
 
-if(user){
-
-chargerProfil();
-
-} else {
-
-document.getElementById("navAdmin").style.display="none";
-
-document.getElementById("appShell").style.display="none";
-
-document.getElementById("loginScreen").style.display="flex";
-
-document.getElementById("identifiant").value="";
-
-document.getElementById("motDePasse").value="";
-
-document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
-
-document.querySelector('.nav-btn[data-tab="piano"]').classList.add("active");
-
-document.querySelectorAll(".tab-content").forEach(c=>c.style.display="none");
-
-document.getElementById("tab-piano").style.display="block";
-
-}
-
+    // Reset active tabs to default (Piano)
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+    const pianoBtn = document.querySelector('.nav-btn[data-tab="piano"]');
+    if (pianoBtn) pianoBtn.classList.add("active");
+    
+    document.querySelectorAll(".tab-content").forEach(c => c.style.display = "none");
+    const tabPiano = document.getElementById("tab-piano");
+    if (tabPiano) tabPiano.style.display = "block";
+  }
 });
+
+
+
+
 
 const CRITERES=["Posture au piano","Position des doigts","Déplacements clavier","Maîtrise de l'exercice"];
 
@@ -917,3 +918,6 @@ carte.style.display = texteRecherchable.includes(filtre) ? "" : "none";
 });
 
 });
+
+
+

@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Les Adorateurs de Fonsorbes</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Alpine.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
 </head>
 
 <body>
@@ -42,17 +47,13 @@
 <div class="app" id="appShell" style="display:none;">
 
     <nav class="sidebar">
-
         <div class="sidebar-title">Les Adorateurs de Fonsorbes</div>
-
         <button class="nav-btn" data-tab="cours">Cours</button>
         <button class="nav-btn" data-tab="repertoire">Répertoire</button>
         <button class="nav-btn" data-tab="membres">Membres</button>
         <button class="nav-btn" data-tab="programmes">Programmes</button>
-        <button class="nav-btn" data-tab="lead">Lead</button>
         <button class="nav-btn active" data-tab="piano">Évaluation Piano</button>
         <button class="nav-btn" data-tab="admin" id="navAdmin" style="display:none;">Administration</button>
-
     </nav>
 
     <div class="main">
@@ -66,158 +67,488 @@
 
         <div class="main-content">
 
+            <!-- TAB COURS -->
             <div class="tab-content" id="tab-cours" style="display:none;">
                 <p class="bientot-disponible">Bientôt disponible.</p>
             </div>
 
-            <div class="tab-content" id="tab-repertoire" style="display:none;">
-                <p class="bientot-disponible">Bientôt disponible.</p>
+            <!-- TAB RÉPERTOIRE -->
+            <div class="tab-content" id="tab-repertoire" style="display:none;" x-data="repertoireComponent()" x-cloak>
+                <div class="repertoire-header-row">
+                    <h2 class="repertoire-title">RÉPERTOIRE</h2>
+                    <button x-show="peutEcrire" class="btn-ajout-chant" @click="ouvrirAjout()">+ Enregistrer un chant</button>
+                </div>
+
+                <div x-show="message" class="alert-banner" :class="messageType === 'success' ? 'alert-success' : 'alert-error'" x-text="message" style="display: none;"></div>
+
+                <!-- Section des filtres de recherche -->
+                <div class="repertoire-filters-bar">
+                    <div class="filter-search">
+                        <input type="text" x-model="termeRecherche" placeholder="Rechercher un chant par titre..." class="search-input">
+                    </div>
+                    <div class="filter-dropdowns">
+                        <div class="filter-group">
+                            <label>Gamme</label>
+                            <select x-model="gammeSelectionnee">
+                                <option value="Toutes">Toutes</option>
+                                <option value="Do">Do</option>
+                                <option value="Do#/Ré♭">Do#/Ré♭</option>
+                                <option value="Ré">Ré</option>
+                                <option value="Ré#/Mi♭">Ré#/Mi♭</option>
+                                <option value="Mi">Mi</option>
+                                <option value="Fa">Fa</option>
+                                <option value="Fa#/Sol♭">Fa#/Sol♭</option>
+                                <option value="Sol">Sol</option>
+                                <option value="Sol#/La♭">Sol#/La♭</option>
+                                <option value="La">La</option>
+                                <option value="La#/Si♭">La#/Si♭</option>
+                                <option value="Si">Si</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Accords</label>
+                            <select x-model="filtreAccords">
+                                <option value="tous">Tous</option>
+                                <option value="avec">Avec accords</option>
+                                <option value="sans">Sans accords</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Paroles</label>
+                            <select x-model="filtreParoles">
+                                <option value="toutes">Toutes</option>
+                                <option value="avec">Avec paroles</option>
+                                <option value="sans">Sans paroles</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grille dynamique des chants -->
+                <div class="repertoire-grid">
+                    <template x-for="chant in chantsFiltrés" :key="chant.id">
+                        <div class="chant-card">
+                            <div class="chant-card-header">
+                                <h3 class="chant-title-text" x-text="chant.titre" @click="ouvrirVisualisation(chant)"></h3>
+                                <span class="badge-gamme" x-text="chant.gamme"></span>
+                            </div>
+                            <div class="chant-card-actions">
+                                <a x-show="chant.pdfParolesUrl" :href="chant.pdfParolesUrl" target="_blank" rel="noopener" class="btn-compact btn-primary">Paroles (PDF)</a>
+                                <a x-show="chant.pdfAccordsUrl && peutVoirAccords" :href="chant.pdfAccordsUrl" target="_blank" rel="noopener" class="btn-compact btn-secondary btn-pdf-accords">Accords (PDF)</a>
+                                <span x-show="chant.pdfAccordsUrl && !peutVoirAccords" class="restricted-badge">Accords restreints</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div x-show="chantsFiltrés.length === 0" class="no-results-message" style="display: none;">
+                    Aucun chant ne correspond à votre recherche.
+                </div>
+
+                <!-- Modale d'Édition / Visualisation Locale -->
+                <div class="modal-overlay" x-show="modaleOuverte" style="display: none;">
+                    <div class="modal-box modal-box-large">
+                        <button type="button" class="modal-close" @click="fermerModale()"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+
+                        <!-- MODE LECTURE / VISUALISATION -->
+                        <div x-show="!modeEdition">
+                            <h3 class="modal-chant-title" x-text="chantActif.titre"></h3>
+                            <div class="modal-chant-meta">
+                                <span class="badge-gamme-large" x-text="'Gamme : ' + chantActif.gamme"></span>
+                                <template x-if="chantActif.lienYoutube">
+                                    <a :href="chantActif.lienYoutube" target="_blank" class="btn-listen-youtube">
+                                        Écouter sur YouTube
+                                    </a>
+                                </template>
+                            </div>
+
+                            <div class="modal-chant-tabs-content">
+                                <div class="modal-chant-section" x-show="chantActif.pdfParolesUrl">
+                                    <h4>Paroles</h4>
+                                    <a :href="chantActif.pdfParolesUrl" target="_blank" rel="noopener" class="btn-pdf-view">
+                                        Voir Paroles (PDF)
+                                    </a>
+                                </div>
+
+                                <div class="modal-chant-section" x-show="chantActif.pdfAccordsUrl && peutVoirAccords">
+                                    <h4>Accords</h4>
+                                    <a :href="chantActif.pdfAccordsUrl" target="_blank" rel="noopener" class="btn-pdf-view btn-pdf-accords">
+                                        Voir Paroles + Accords (PDF)
+                                    </a>
+                                </div>
+                                <div class="modal-chant-section" x-show="chantActif.pdfAccordsUrl && !peutVoirAccords">
+                                    <h4>Accords</h4>
+                                    <p class="restricted-message">Le PDF d'accords n'est pas accessible pour votre rôle.</p>
+                                </div>
+                            </div>
+
+                            <div class="modal-chant-footer">
+                                <div class="modal-chant-traceability">
+                                    <p>Créé par <span x-text="chantActif.creeParNom"></span> le <span x-text="formaterDate(chantActif.createdAt)"></span></p>
+                                    <p x-show="chantActif.lastModifiedBy">Modifié par <span x-text="chantActif.modifieParNom"></span> le <span x-text="formaterDate(chantActif.lastModifiedAt)"></span></p>
+                                </div>
+                                <div x-show="peutEcrire" class="modal-chant-admin-actions">
+                                    <button class="btn-compact btn-primary" @click="basculerEdition()">Modifier</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MODE ÉDITION -->
+                        <div x-show="modeEdition">
+                            <h3 x-text="chantActif.id ? 'Modifier le chant' : 'Enregistrer un nouveau chant'"></h3>
+
+                            <div class="form-group">
+                                <label>Titre du chant</label>
+                                <input type="text" x-model="chantActif.titre" placeholder="Ex: Hosanna">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Gamme (Tonalité)</label>
+                                <select x-model="chantActif.gamme">
+                                    <option value="Do">Do</option>
+                                    <option value="Do#/Ré♭">Do#/Ré♭</option>
+                                    <option value="Ré">Ré</option>
+                                    <option value="Ré#/Mi♭">Ré#/Mi♭</option>
+                                    <option value="Mi">Mi</option>
+                                    <option value="Fa">Fa</option>
+                                    <option value="Fa#/Sol♭">Fa#/Sol♭</option>
+                                    <option value="Sol">Sol</option>
+                                    <option value="Sol#/La♭">Sol#/La♭</option>
+                                    <option value="La">La</option>
+                                    <option value="La#/Si♭">La#/Si♭</option>
+                                    <option value="Si">Si</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Lien média YouTube (Optionnel)</label>
+                                <input type="text" x-model="chantActif.lienYoutube" placeholder="Ex: https://youtube.com/...">
+                            </div>
+
+                            <div class="form-group">
+                                <label>PDF Paroles seules</label>
+                                <input type="file" accept="application/pdf" @change="chargerFichierPDF($event, 'pdfParolesUrl')" class="file-input-field">
+                                <template x-if="chantActif.pdfParolesUrl">
+                                    <span class="file-loaded-indicator">✓ PDF Paroles chargé</span>
+                                </template>
+                            </div>
+
+                            <div class="form-group">
+                                <label>PDF Paroles + Accords</label>
+                                <input type="file" accept="application/pdf" @change="chargerFichierPDF($event, 'pdfAccordsUrl')" class="file-input-field">
+                                <template x-if="chantActif.pdfAccordsUrl">
+                                    <span class="file-loaded-indicator">✓ PDF Accords chargé</span>
+                                </template>
+                            </div>
+
+                            <div class="modal-chant-actions">
+                                <button type="button" class="btn-compact btn-primary" @click="enregistrerChant()">Enregistrer</button>
+                                <button type="button" class="btn-compact btn-secondary" @click="annulerEdition()">Annuler</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
+            <!-- TAB MEMBRES -->
             <div class="tab-content" id="tab-membres" style="display:none;">
                 <p class="bientot-disponible">Bientôt disponible.</p>
             </div>
 
-            <div class="tab-content" id="tab-programmes" style="display:none;">
-                <p class="bientot-disponible">Bientôt disponible.</p>
+            <!-- TAB PROGRAMMES -->
+            <div class="tab-content" id="tab-programmes" style="display:none;" x-data="programmesComponent()" x-cloak>
+                <div class="repertoire-header-row">
+                    <h2 class="programme-title">PROGRAMMES À VENIR</h2>
+                    <button x-show="peutEcrire" class="btn-ajout-chant" @click="ouvrirAjout()">+ Créer un programme</button>
+                </div>
+
+                <div x-show="message" class="alert-banner" :class="messageType === 'success' ? 'alert-success' : 'alert-error'" x-text="message" style="display: none;"></div>
+
+                <!-- Grille des programmes -->
+                <div class="programmes-grid">
+                    <template x-for="prog in listeProgrammes" :key="prog.id">
+                        <div class="programme-card">
+                            <div class="programme-card-header">
+                                <div class="programme-card-meta">
+                                    <h4 class="programme-type" x-text="prog.typeEvent"></h4>
+                                    <span class="programme-date" x-text="formaterDateEvent(prog.dateEvent)"></span>
+                                </div>
+                                <div class="programme-status">
+                                    <template x-if="estComplet(prog)">
+                                        <span class="badge badge-success-prog">Complet</span>
+                                    </template>
+                                    <template x-if="!estComplet(prog)">
+                                        <span class="badge badge-warning-prog">⚠️ Séquence incomplète</span>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Déroulé en lecture seule -->
+                            <div class="programme-sequence-view">
+                                <h5>Déroulé du culte :</h5>
+                                <div class="sequence-list">
+                                    <template x-for="(etape, index) in prog.sequence" :key="index">
+                                        <div class="sequence-item-row">
+                                            <span class="sequence-time" x-text="etape.heure"></span>
+                                            <span class="sequence-title" x-text="etape.titreSection"></span>
+                                            <div class="sequence-song-link">
+                                                <template x-if="etape.songId">
+                                                    <a href="#" @click.prevent="$dispatch('ouvrir-fiche-chant', { id: etape.songId })" class="song-link-anchor" x-text="trouverTitreChant(etape.songId)"></a>
+                                                </template>
+                                                <template x-if="!etape.songId">
+                                                    <span class="no-song-tag">-</span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <template x-if="prog.consignes">
+                                <div class="programme-notes-box">
+                                    <strong>Consignes / Répétition :</strong>
+                                    <p x-text="prog.consignes"></p>
+                                </div>
+                            </template>
+
+                            <div class="programme-card-footer">
+                                <div class="programme-traceability">
+                                    Modifié par <span x-text="prog.modifieParNom || 'Inconnu'"></span> le <span x-text="formaterTimestamp(prog.lastModifiedAt || prog.createdAt)"></span>
+                                </div>
+                                <div class="programme-actions-row" x-show="peutEcrire">
+                                    <a href="#" @click.prevent="ouvrirEdition(prog)" class="action-edit-link">Modifier</a>
+                                    <a href="#" @click.prevent="supprimerProgramme(prog.id)" class="action-delete-link">Supprimer</a>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div x-show="listeProgrammes.length === 0" class="no-results-message">
+                    Aucun programme planifié pour le moment.
+                </div>
+
+                <!-- Modale d'Édition / Création de Programme -->
+                <div class="modal-overlay" x-show="modaleOuverte" style="display: none;">
+                    <div class="modal-box modal-box-large">
+                        <button type="button" class="modal-close" @click="fermerModale()"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+
+                        <h3 x-text="programmeActif.id ? 'Modifier le programme' : 'Créer un nouveau programme'"></h3>
+
+                        <div class="form-group">
+                            <label>Date de l'événement</label>
+                            <input type="date" x-model="programmeActif.dateEvent">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Type d'événement</label>
+                            <select x-model="programmeActif.typeEvent">
+                                <option value="Culte du Dimanche">Culte du Dimanche</option>
+                                <option value="Samedi des Miracles">Samedi des Miracles</option>
+                                <option value="Mercredi des Champions">Mercredi des Champions</option>
+                                <option value="Veillée spéciale">Veillée spéciale</option>
+                                <option value="Répétition générale">Répétition générale</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Consignes d'équipe / Répétition</label>
+                            <textarea x-model="programmeActif.consignes" rows="3" placeholder="Ex: Répétition générale le samedi à 14h..."></textarea>
+                        </div>
+
+                        <!-- Gestion réactive du déroulé -->
+                        <div class="sequence-editor-section">
+                            <div class="sequence-editor-header">
+                                <h4>Déroulé chronologique</h4>
+                                <button type="button" class="btn-ajout-etape" @click="ajouterEtape()">+ Ajouter une étape</button>
+                            </div>
+
+                            <div class="sequence-editor-table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 100px;">Heure</th>
+                                            <th>Section / Moment</th>
+                                            <th>Chant lié</th>
+                                            <th style="width: 130px; text-align: center;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template x-for="(etape, index) in programmeActif.sequence" :key="index">
+                                            <tr>
+                                                <td>
+                                                    <input type="text" x-model="etape.heure" placeholder="09h15" class="table-input-small">
+                                                </td>
+                                                <td>
+                                                    <input type="text" x-model="etape.titreSection" placeholder="Adoration" class="table-input-medium">
+                                                </td>
+                                                <td>
+                                                    <select x-model="etape.songId" class="table-select">
+                                                        <option value="">(Aucun chant)</option>
+                                                        <template x-for="song in listeChants" :key="song.id">
+                                                            <option :value="song.id" x-text="song.titre + ' (' + song.gamme + ')'"></option>
+                                                        </template>
+                                                    </select>
+                                                </td>
+                                                <td style="text-align: center;">
+                                                    <div class="table-reorder-buttons">
+                                                        <button type="button" class="btn-arrow" title="Monter" @click="monterEtape(index)" :disabled="index === 0">↑</button>
+                                                        <button type="button" class="btn-arrow" title="Descendre" @click="descendreEtape(index)" :disabled="index === programmeActif.sequence.length - 1">↓</button>
+                                                        <button type="button" class="btn-delete-etape" title="Supprimer" @click="supprimerEtape(index)">×</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="modal-chant-actions">
+                            <button type="button" class="btn-compact btn-primary" @click="enregistrerProgramme()">Enregistrer</button>
+                            <button type="button" class="btn-compact btn-secondary" @click="fermerModale()">Annuler</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="tab-content" id="tab-lead" style="display:none;">
-                <p class="bientot-disponible">Bientôt disponible.</p>
-            </div>
-
+            <!-- TAB PIANO (ÉVALUATION PRINCIPALE SUR INDEX) -->
             <div class="tab-content" id="tab-piano">
-
                 <h2 id="nom"></h2>
-
                 <div id="contenu"></div>
-
             </div>
 
+            <!-- TAB ADMINISTRATION -->
             <div class="tab-content" id="tab-admin" style="display:none;">
-
                 <h2>Administration</h2>
                 <p class="admin-subtitle">Gérez les membres, les évaluations et les contenus de l'application.</p>
 
                 <div class="admin-cards-row">
-
                     <section class="admin-card" id="gestion-membres">
-
                         <div class="admin-card-header">
                             <h3>Gestion des membres</h3>
                             <button type="button" class="btn-ajout" title="Ajout" onclick="nouveauMembreForm()">+</button>
                         </div>
-
                         <input type="text" id="adminRechercheMembre" placeholder="Rechercher un membre...">
-
                         <div class="admin-table-scroll">
                             <div id="adminMembresTableBody" class="membres-liste"></div>
                         </div>
-
                         <p id="adminTotalMembres" class="admin-table-footer"></p>
-
                     </section>
 
                     <section class="admin-card" id="gestion-piano">
-
                         <div class="admin-card-header">
                             <h3>Évaluation Piano</h3>
                             <select id="adminSelectEleve"></select>
                             <button type="button" class="btn-ajout" title="Ajout" onclick="nouvelleEvaluationAdmin(document.getElementById('adminSelectEleve').value)">+</button>
                         </div>
-
                         <div id="adminHistoriqueEvaluations" class="historique-evaluations">
                             <p class="bientot-disponible">Sélectionnez un membre pour voir son historique.</p>
                         </div>
-
                     </section>
-
                 </div>
 
                 <div class="admin-cards-row admin-cards-row-compact">
-
                     <section class="admin-card admin-card-placeholder">
                         <h3>Gestion des cours</h3>
                     </section>
-
                     <section class="admin-card admin-card-placeholder">
                         <h3>Gestion du répertoire</h3>
                     </section>
-
                     <section class="admin-card admin-card-placeholder">
                         <h3>Gestion des programmes</h3>
                     </section>
-
-                    <section class="admin-card admin-card-placeholder">
-                        <h3>Gestion des leads</h3>
-                    </section>
-
                 </div>
 
                 <section class="admin-card admin-card-placeholder">
                     <h3>Activité récente</h3>
                 </section>
-
             </div>
 
+            <!-- Modale Membre (Admin) -->
             <div class="modal-overlay" id="modalMembre" style="display:none;">
                 <div class="modal-box">
-
-                    <button type="button" class="modal-close" onclick="fermerModal('modalMembre')">×</button>
-
+                    <button type="button" class="modal-close" onclick="fermerModal('modalMembre')" title="Fermer"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                     <h3 id="modalMembreTitre">Membre</h3>
-
+                    
                     <label for="adminIdentifiant">Identifiant</label><br>
                     <input type="text" id="adminIdentifiant">
-
                     <br><br>
 
                     <label for="adminNom">Nom</label><br>
                     <input type="text" id="adminNom">
-
                     <br><br>
 
                     <label for="adminPrenom">Prénom</label><br>
                     <input type="text" id="adminPrenom">
-
                     <br><br>
 
                     <label for="adminRole">Rôle</label><br>
                     <select id="adminRole">
                         <option value="membre">Membre</option>
+                        <option value="lead">Lead</option>
+                        <option value="pasteur">Pasteur</option>
                         <option value="admin">Admin</option>
                     </select>
-
                     <br><br>
 
                     <div id="adminMotDePasseInitialWrapper" style="display:none;">
-
                         <label for="adminMotDePasseInitial">Mot de passe initial</label><br>
                         <input type="password" id="adminMotDePasseInitial">
-
                         <br><br>
-
                     </div>
 
                     <button id="adminCreerBtn" onclick="creerMembre()" style="display:none;">Créer le compte</button>
-
                     <button id="adminEnregistrerBtn" onclick="enregistrerProfil()">Enregistrer</button>
-
                 </div>
             </div>
 
+            <!-- Modale Voir Membre (Admin) -->
             <div class="modal-overlay" id="modalVoirMembre" style="display:none;">
                 <div class="modal-box">
-
-                    <button type="button" class="modal-close" onclick="fermerModal('modalVoirMembre')">×</button>
-
+                    <button type="button" class="modal-close" onclick="fermerModal('modalVoirMembre')" title="Fermer"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                     <h3>Fiche membre</h3>
-
                     <p><strong>Identifiant :</strong> <span id="voirIdentifiant"></span></p>
                     <p><strong>Nom :</strong> <span id="voirNom"></span></p>
                     <p><strong>Prénom :</strong> <span id="voirPrenom"></span></p>
                     <p><strong>Rôle :</strong> <span id="voirRole"></span></p>
+                </div>
+            </div>
 
+            <!-- Modale de Fiche Chant Globale (Lecture seule / PDFs) -->
+            <div class="modal-overlay" x-data="ficheChantComponent()" x-show="ouvert" x-cloak style="display: none;" @ouvrir-fiche-chant.window="ouvrir($event.detail.id)">
+                <div class="modal-box modal-box-large" @click.away="fermer()">
+                    <button type="button" class="modal-close" @click="fermer()" title="Fermer"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                    
+                    <h3 class="modal-chant-title" x-text="chant.titre"></h3>
+                    <div class="modal-chant-meta">
+                        <span class="badge-gamme-large" x-text="'Gamme : ' + chant.gamme"></span>
+                        <template x-if="chant.lienYoutube">
+                            <a :href="chant.lienYoutube" target="_blank" class="btn-listen-youtube">
+                                Écouter sur YouTube
+                            </a>
+                        </template>
+                    </div>
+
+                    <div class="modal-chant-tabs-content">
+                        <div class="modal-chant-section" x-show="chant.pdfParolesUrl">
+                            <h4>Paroles</h4>
+                            <a :href="chant.pdfParolesUrl" target="_blank" rel="noopener" class="btn-pdf-view">
+                                Voir Paroles (PDF)
+                            </a>
+                        </div>
+
+                        <div class="modal-chant-section" x-show="chant.pdfAccordsUrl && peutVoirAccords">
+                            <h4>Accords</h4>
+                            <a :href="chant.pdfAccordsUrl" target="_blank" rel="noopener" class="btn-pdf-view btn-pdf-accords">
+                                Voir Paroles + Accords (PDF)
+                            </a>
+                        </div>
+                        <div class="modal-chant-section" x-show="chant.pdfAccordsUrl && !peutVoirAccords">
+                            <h4>Accords</h4>
+                            <p class="restricted-message">Le PDF d'accords n'est pas accessible pour votre rôle.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -230,8 +561,10 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script src="script.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/script.js"></script>
+<script src="js/repertoire.js"></script>
+<script src="js/programmes.js"></script>
 
 </body>
 </html>
